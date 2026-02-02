@@ -1,5 +1,16 @@
-Each employee should:
-1. upload documents from local storage to the archive page of the DMS.
-2. share documents for an individual and team.
-3. create workspace and share documents.
-4. share to the organization and branch
+My Library Module
+- -Upload documents from local storage to the archive page of the DMS.
+
+Compose Module
+- -Share documents for an individual.
+- -Share documents for a team.
+- -Share documents for a workspace.
+- -Share documents for a branch.
+- -Create workspace and share documents.
+
+Approval Module
+- -Have the module
+
+Workspace Module
+- -Create workspace
+

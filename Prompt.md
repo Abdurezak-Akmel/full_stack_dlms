@@ -21,3 +21,30 @@ In the Mylibrary page, let each category have a delete button and an edit button
 
 Promt 5 - Drafts Page
 The draft page is a list of drafts from the compose page. It should have a grid display with cards. Each card should have the draft name, the date and time it was created, the size of the document and the number of recipients and all the other information that it acquires from the compose page. The cards should be scrollable when the viewport height is less than the content height. When the cards are clicked, they should open the compose page with the draft information. Each draft should have a delete button. When a draft is created initially from the compose page, it should be stored in the database. When a draft is deleted from the drafts page, it should be deleted from the database. 
+
+Prompt 6 - Admin Page
+In the dashboard, delete the roles and registration requests pages. Create a new admin module and name it "Admin Tools". 
+In the admin tools page, there should be two sections. The first section is for managing users and the second section is for managing roles. In the user management section, there should be a table of users. Each row should have the user's Employee ID, name, email, phone number, role and status. The table should have a search bar for searching users by name, email, phone number, role and status. The table should have a delete button and an edit button. When the edit button is clicked, the user's information should be editable and the user should be able to save the changes. When the delete button is clicked, the user should be deleted. 
+In the role management section, there should be a table of roles. Each row should have the role's name and description. The table should have a delete button and an edit button. When the edit button is clicked, the role's information should be editable and the user should be able to save the changes. When the delete button is clicked, the role should be deleted.
+Each role should have a checkbox for privileges. The privileges are:
+In My Library Module
+- -Upload documents from local storage to the archive page of the DMS.
+
+In Compose Module
+- -Share documents for an individual.
+- -Share documents for a team.
+- -Share documents for a workspace.
+- -Share documents for a branch.
+- -Create workspace and share documents.
+
+In Approval Module
+- -Have the module
+
+In Workspace Module
+- -Create workspace
+
+Let there be only one admin credential in the database. The admin should be able to create a user and assign a role to the user. The user should be able to login with the credentials created by the admin. Avoid the admin from being deleted or his role being changed. Avoid the "change first password" funcitonality in the log in page. Also avoid the sign up functionality since the admin creates accounts for users. Let there be a single user credential in the database for log in test. The admin tools page shouold be visible only for the admin account not for users. 
+Do this on the frontend, backend and database. Update the database query file as well. I will run the query in pgadmin using postgres user. 
+
+Prompt 7 - The Compose Page
+In the compose page, when send to is for an individual, the search bar should search from the users in the database. Let the users table in the database include columns for branch (not null), team (null) and position (not null). The filters of the search bar should filter by branch and by team in the users table. Remove the mock data of the  branch filter and the teams filter. Branches and teams should be fetched from the user table in the database. Meaning, when a user account is created, the branch and team of the user should be fetched to the filters.The same filters should be implemented if the scope is team and workspace. The list of branches in the branch scope should be fetched from the user table in the database.  

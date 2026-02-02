@@ -194,24 +194,18 @@ app.delete('/api/documents/:id', async (req, res) => {
 });
 
 // --- Drafts API ---
-
-// Create or Update Draft
 app.post('/api/drafts', async (req, res) => {
     const { id, userId, name, content } = req.body;
-    const uid = userId || 1; // Default to user 1
+    const uid = userId || 1;
 
     try {
         let result;
         if (id) {
-            // Update existing draft
-            // Check if it belongs to user
-            // Note: In real app check ownership. Here assuming it's correct.
             result = await db.query(
                 'UPDATE drafts SET name = $1, content = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3 RETURNING *',
                 [name, content, id]
             );
         } else {
-            // Create new draft
             result = await db.query(
                 'INSERT INTO drafts (user_id, name, content) VALUES ($1, $2, $3) RETURNING *',
                 [uid, name, content]
@@ -229,7 +223,6 @@ app.post('/api/drafts', async (req, res) => {
     }
 });
 
-// Get User Drafts
 app.get('/api/drafts', async (req, res) => {
     try {
         const userId = req.query.userId || 1;
@@ -241,7 +234,6 @@ app.get('/api/drafts', async (req, res) => {
     }
 });
 
-// Get Single Draft
 app.get('/api/drafts/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -256,7 +248,6 @@ app.get('/api/drafts/:id', async (req, res) => {
     }
 });
 
-// Delete Draft
 app.delete('/api/drafts/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -268,6 +259,205 @@ app.delete('/api/drafts/:id', async (req, res) => {
     }
 });
 
+// --- Auth & Login ---
+app.post('/api/auth/login', async (req, res) => {
+    const { employeeId, password } = req.body;
+    if (!employeeId || !password) return res.status(400).json({ error: 'Missing credentials' });
+
+    try {
+        const result = await db.query(`
+            SELECT u.*, r.name as role_name, r.privileges 
+            FROM users u 
+            LEFT JOIN roles r ON u.role_id = r.id 
+            WHERE u.employee_id = $1 AND u.password_hash = $2
+        `, [employeeId, password]);
+
+        if (result.rows.length === 0) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        const user = result.rows[0];
+        if (user.status !== 'Active') {
+            return res.status(403).json({ error: 'Account is inactive' });
+        }
+
+        // Return user info excluding password
+        delete user.password_hash;
+        res.json(user);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// --- User Management ---
+app.get('/api/users', async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT u.*, r.name as role_name 
+            FROM users u 
+            LEFT JOIN roles r ON u.role_id = r.id 
+            ORDER BY u.created_at DESC
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.post('/api/users', async (req, res) => {
+    const { employee_id, name, email, phone_number, password, role_id, status, branch, team, position } = req.body;
+
+    if (!employee_id || !name || !email || !role_id || !branch || !position) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    try {
+        const result = await db.query(
+            'INSERT INTO users (employee_id, name, email, phone_number, password_hash, role_id, status, branch, team, position) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *',
+            [employee_id, name, email, phone_number, password || 'password123', role_id, status || 'Active', branch || 'Headquarters', team, position || 'Employee']
+        );
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.put('/api/users/:id', async (req, res) => {
+    const { id } = req.params;
+    const { employee_id, name, email, phone_number, role_id, status, branch, team, position } = req.body;
+
+    if (!employee_id || !name || !email || !role_id || !branch || !position) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    try {
+        // Protect Admin (EMP-001)
+        const checkResult = await db.query('SELECT employee_id FROM users WHERE id = $1', [id]);
+        if (checkResult.rows.length > 0 && checkResult.rows[0].employee_id === 'EMP-001') {
+            // Cannot change role of admin
+            // However, we can allow updating name or phone, but usually best to restrict.
+            // The prompt says: "Avoid the admin from being deleted or his role being changed."
+
+            // Check if role_id is being changed
+            const currentRole = await db.query('SELECT role_id FROM users WHERE id = $1', [id]);
+            if (role_id && role_id != currentRole.rows[0].role_id) {
+                return res.status(403).json({ error: 'Cannot change admin role' });
+            }
+        }
+
+        const result = await db.query(
+            'UPDATE users SET employee_id = $1, name = $2, email = $3, phone_number = $4, role_id = $5, status = $6, branch = $7, team = $8, position = $9 WHERE id = $10 RETURNING *',
+            [employee_id, name, email, phone_number, role_id, status, branch, team, position, id]
+        );
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.delete('/api/users/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const checkResult = await db.query('SELECT employee_id FROM users WHERE id = $1', [id]);
+        if (checkResult.rows.length > 0 && checkResult.rows[0].employee_id === 'EMP-001') {
+            return res.status(403).json({ error: 'Cannot delete admin account' });
+        }
+        await db.query('DELETE FROM users WHERE id = $1', [id]);
+        res.json({ message: 'User deleted' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// --- Role Management ---
+app.get('/api/roles', async (req, res) => {
+    try {
+        const result = await db.query('SELECT * FROM roles ORDER BY name ASC');
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.post('/api/roles', async (req, res) => {
+    const { name, description, privileges } = req.body;
+    try {
+        const result = await db.query(
+            'INSERT INTO roles (name, description, privileges) VALUES ($1, $2, $3) RETURNING *',
+            [name, description, privileges]
+        );
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.put('/api/roles/:id', async (req, res) => {
+    const { id } = req.params;
+    const { name, description, privileges } = req.body;
+    try {
+        const checkResult = await db.query('SELECT name FROM roles WHERE id = $1', [id]);
+        if (checkResult.rows.length > 0 && checkResult.rows[0].name === 'Admin') {
+            if (name !== 'Admin') {
+                return res.status(403).json({ error: 'Cannot change Admin role name' });
+            }
+        }
+        const result = await db.query(
+            'UPDATE roles SET name = $1, description = $2, privileges = $3 WHERE id = $4 RETURNING *',
+            [name, description, privileges, id]
+        );
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.delete('/api/roles/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const checkResult = await db.query('SELECT name FROM roles WHERE id = $1', [id]);
+        if (checkResult.rows.length > 0 && checkResult.rows[0].name === 'Admin') {
+            return res.status(403).json({ error: 'Cannot delete Admin role' });
+        }
+        await db.query('DELETE FROM roles WHERE id = $1', [id]);
+        res.json({ message: 'Role deleted' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+
+// Get Metadata (Branches, Teams)
+app.get('/api/metadata/branches', async (req, res) => {
+    try {
+        const result = await db.query('SELECT DISTINCT branch FROM users WHERE branch IS NOT NULL ORDER BY branch');
+        res.json(result.rows.map(row => row.branch));
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.get('/api/metadata/teams', async (req, res) => {
+    try {
+        const result = await db.query('SELECT DISTINCT team FROM users WHERE team IS NOT NULL ORDER BY team');
+        res.json(result.rows.map(row => row.team));
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+
