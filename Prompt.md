@@ -48,3 +48,5 @@ Do this on the frontend, backend and database. Update the database query file as
 
 Prompt 7 - The Compose Page
 In the compose page, when send to is for an individual, the search bar should search from the users in the database. Let the users table in the database include columns for branch (not null), team (null) and position (not null). The filters of the search bar should filter by branch and by team in the users table. Remove the mock data of the  branch filter and the teams filter. Branches and teams should be fetched from the user table in the database. Meaning, when a user account is created, the branch and team of the user should be fetched to the filters.The same filters should be implemented if the scope is team and workspace. The list of branches in the branch scope should be fetched from the user table in the database.  
+
+Prompt 8 - 
