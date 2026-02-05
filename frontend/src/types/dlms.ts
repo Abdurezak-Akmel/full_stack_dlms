@@ -8,6 +8,24 @@ export type SendType = 'approval' | 'review' | 'information';
 
 export type SecurityLevel = 'public' | 'internal' | 'confidential' | 'restricted';
 
+export interface RolePrivileges {
+  myLibrary?: {
+    upload?: boolean;
+  };
+  compose?: {
+    shareIndividual?: boolean;
+    shareTeam?: boolean;
+    shareWorkspace?: boolean;
+    shareBranch?: boolean;
+  };
+  approval?: {
+    hasModule?: boolean;
+  };
+  workspace?: {
+    createWorkspace?: boolean;
+  };
+}
+
 export interface User {
   id: string | number;
   employee_id: string; // From DB
@@ -22,6 +40,7 @@ export interface User {
   position?: string;
   avatar?: string;
   department?: string; // Legacy field, might map to team
+  privileges?: RolePrivileges;
 }
 
 

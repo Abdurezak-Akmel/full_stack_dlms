@@ -5,11 +5,12 @@ import { Workspace } from '@/types/dlms';
 import { Button } from '@/components/ui/button';
 import { CreateWorkspaceModal } from '@/components/workspaces/CreateWorkspaceModal';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Plus, 
-  Users, 
-  FileText, 
-  Calendar, 
+import { useAuth } from '@/contexts/AuthContext';
+import {
+  Plus,
+  Users,
+  FileText,
+  Calendar,
   Settings,
   ChevronRight,
   Search
@@ -18,6 +19,7 @@ import { Input } from '@/components/ui/input';
 import { mockUsers } from '@/data/mockData';
 
 export default function Workspaces() {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateWorkspaceOpen, setIsCreateWorkspaceOpen] = useState(false);
   const navigate = useNavigate();
@@ -28,7 +30,7 @@ export default function Workspaces() {
   );
 
   return (
-    <AppLayout 
+    <AppLayout
       title="Workspaces"
       subtitle="Collaborate with teams on shared documents and projects"
     >
@@ -37,8 +39,8 @@ export default function Workspaces() {
         <div className="max-w-md">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search workspaces..." 
+            <Input
+              placeholder="Search workspaces..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -116,16 +118,18 @@ export default function Workspaces() {
           ))}
 
           {/* New Workspace Card */}
-          <button
-            className="panel-section p-5 border-dashed hover:border-primary/50 hover:bg-primary/5 transition-all flex flex-col items-center justify-center min-h-[200px] text-muted-foreground hover:text-primary"
-            onClick={() => setIsCreateWorkspaceOpen(true)}
-          >
-            <div className="w-12 h-12 rounded-xl border-2 border-dashed border-current flex items-center justify-center mb-3">
-              <Plus className="w-6 h-6" />
-            </div>
-            <span className="font-medium">Create Workspace</span>
-            <span className="text-sm mt-1">Start a new collaboration</span>
-          </button>
+          {!!user?.privileges?.workspace?.createWorkspace && (
+            <button
+              className="panel-section p-5 border-dashed hover:border-primary/50 hover:bg-primary/5 transition-all flex flex-col items-center justify-center min-h-[200px] text-muted-foreground hover:text-primary"
+              onClick={() => setIsCreateWorkspaceOpen(true)}
+            >
+              <div className="w-12 h-12 rounded-xl border-2 border-dashed border-current flex items-center justify-center mb-3">
+                <Plus className="w-6 h-6" />
+              </div>
+              <span className="font-medium">Create Workspace</span>
+              <span className="text-sm mt-1">Start a new collaboration</span>
+            </button>
+          )}
         </div>
 
         {filteredWorkspaces.length === 0 && searchQuery && (

@@ -49,4 +49,27 @@ Do this on the frontend, backend and database. Update the database query file as
 Prompt 7 - The Compose Page
 In the compose page, when send to is for an individual, the search bar should search from the users in the database. Let the users table in the database include columns for branch (not null), team (null) and position (not null). The filters of the search bar should filter by branch and by team in the users table. Remove the mock data of the  branch filter and the teams filter. Branches and teams should be fetched from the user table in the database. Meaning, when a user account is created, the branch and team of the user should be fetched to the filters.The same filters should be implemented if the scope is team and workspace. The list of branches in the branch scope should be fetched from the user table in the database.  
 
-Prompt 8 - 
+Prompt 8 - Privileges List
+In the admin tools page, in the role management section, the list of privilege checkboxes should be updated. The fifth privilege in the compose module should be deleted. The new list of privileges are:
+
+In My Library Module
+- -Upload documents from local storage to the archive page of the DMS.
+
+In Compose Module
+- -Share documents for an individual.
+- -Share documents for a team.
+- -Share documents for a workspace.
+- -Share documents for a branch.
+
+In Approval Module
+- -Have the module
+
+In Workspace Module
+- -Create workspace
+
+
+Prompt 9 - Privileges List
+In the admin tools page, in the role management section, let the privileges affect the components of the user dashboard UI. For example, if the user does not have the privilege to upload documents from local storage to the archive page of the DMS, the upload button should not be visible in the archive page. If the user does not have the privilege to share documents for an individual, the individual scope from the four scopes in the compose page should not be visible in the compose page. If the user does not have the privilege to share documents for a team, the team scope from the four scopes in the compose page should not be visible in the compose page. If the user does not have the privilege to share documents for a workspace, the workspace scope from the four scopes in the compose page should not be visible in the compose page. If the user does not have the privilege to share documents for a branch, the branch scope from the four scopes in the compose page should not be visible in the compose page. If the user does not have the privilege to have the approval module, the approval module should not be visible in the user dashboard. If the user does not have the privilege to create a workspace and share documents for a workspace, the create workspace button should not be visible in the workspace page.
+
+Promt-10
+

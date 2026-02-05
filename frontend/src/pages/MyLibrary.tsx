@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { FolderPlus, Plus, Upload, Search, X, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Types
 interface Category {
@@ -20,6 +21,7 @@ interface Category {
 }
 
 export default function MyLibrary() {
+    const { user } = useAuth();
     const [documents, setDocuments] = useState<Document[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -189,10 +191,12 @@ export default function MyLibrary() {
             title="My Library"
             subtitle="Browse and organize your stored documents and letters"
             actions={
-                <Button onClick={() => setIsUploadOpen(true)}>
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload
-                </Button>
+                !!user?.privileges?.myLibrary?.upload && (
+                    <Button onClick={() => setIsUploadOpen(true)}>
+                        <Upload className="w-4 h-4 mr-2" />
+                        Upload
+                    </Button>
+                )
             }
         >
             <div className="flex gap-6 h-[calc(100vh-180px)] animate-fade-in">

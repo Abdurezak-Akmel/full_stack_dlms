@@ -437,7 +437,7 @@ export default function AdminTools() {
                                         value={editingUser?.employee_id || ''}
                                         onChange={(e) => setEditingUser(prev => prev ? { ...prev, employee_id: e.target.value } : null)}
                                         required
-                                        disabled={editingUser?.employee_id === 'EMP-001'}
+                                        disabled={!!editingUser?.id && editingUser?.employee_id === 'EMP-001'}
                                     />
                                 </div>
                                 <div className="grid gap-2">
@@ -473,7 +473,7 @@ export default function AdminTools() {
                                         <Select
                                             value={editingUser?.role_id?.toString()}
                                             onValueChange={(val) => setEditingUser(prev => prev ? { ...prev, role_id: parseInt(val) } : null)}
-                                            disabled={editingUser?.employee_id === 'EMP-001'}
+                                            disabled={!!editingUser?.id && editingUser?.employee_id === 'EMP-001'}
                                         >
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Select Role" />
@@ -595,7 +595,7 @@ export default function AdminTools() {
                                                 onCheckedChange={(checked) => togglePrivilege('myLibrary', 'upload', !!checked)}
                                             />
                                             <Label htmlFor="p-lib-upload" className="font-normal cursor-pointer">
-                                                Upload documents from local storage to the archive page
+                                                Upload documents from local storage to the archive page of the DMS.
                                             </Label>
                                         </div>
                                     </div>
@@ -609,7 +609,6 @@ export default function AdminTools() {
                                                 { id: 'shareTeam', label: 'Share documents for a team' },
                                                 { id: 'shareWorkspace', label: 'Share documents for a workspace' },
                                                 { id: 'shareBranch', label: 'Share documents for a branch' },
-                                                { id: 'createWorkspace', label: 'Create workspace and share documents' },
                                             ].map(p => (
                                                 <div key={p.id} className="flex items-center space-x-2">
                                                     <Checkbox

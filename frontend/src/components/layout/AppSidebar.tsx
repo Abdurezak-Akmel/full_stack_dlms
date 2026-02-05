@@ -77,19 +77,24 @@ export function AppSidebar() {
       {/* Main Navigation */}
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         <div className="space-y-1">
-          {mainNavItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) => cn(
-                "nav-item",
-                isActive && "nav-item-active"
-              )}
-            >
-              <item.icon className="w-5 h-5 flex-shrink-0" />
-              {!collapsed && <span>{item.label}</span>}
-            </NavLink>
-          ))}
+          {mainNavItems.map((item) => {
+            if (item.label === 'Approvals' && !user?.privileges?.approval?.hasModule) {
+              return null;
+            }
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) => cn(
+                  "nav-item",
+                  isActive && "nav-item-active"
+                )}
+              >
+                <item.icon className="w-5 h-5 flex-shrink-0" />
+                {!collapsed && <span>{item.label}</span>}
+              </NavLink>
+            )
+          })}
         </div>
 
         {isAdmin && (

@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { addStoredSentItem } from '@/lib/sentStorage';
 import { addStoredComposeDraft, deleteStoredComposeDraft, getStoredComposeDraftById } from '@/lib/draftStorage';
 import { useBlocker, useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -73,6 +74,7 @@ interface Workspace {
 type ContentSource = 'archive' | 'inbox' | 'upload';
 
 export default function Compose() {
+  const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -546,27 +548,31 @@ export default function Compose() {
                   value: 'person',
                   label: 'Individual',
                   description: 'Send to a specific individual',
-                  icon: UserIcon
+                  icon: UserIcon,
+                  visible: !!user?.privileges?.compose?.shareIndividual
                 },
                 {
                   value: 'department',
                   label: 'Team',
                   description: 'Send to a team',
-                  icon: Building
+                  icon: Building,
+                  visible: !!user?.privileges?.compose?.shareTeam
                 },
                 {
                   value: 'workspace',
                   label: 'Workspace',
                   description: 'Send to a workspace',
-                  icon: Users
+                  icon: Users,
+                  visible: !!user?.privileges?.compose?.shareWorkspace
                 },
                 {
                   value: 'branch',
                   label: 'Branch',
                   description: 'Send to everyone in the branch',
-                  icon: CheckCheck
+                  icon: CheckCheck,
+                  visible: !!user?.privileges?.compose?.shareBranch
                 }
-              ].map((item) => (
+              ].filter(item => item.visible).map((item) => (
                 <button
                   key={item.value}
                   type="button"
