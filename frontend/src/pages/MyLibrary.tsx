@@ -50,8 +50,9 @@ export default function MyLibrary() {
     }, [selectedCategory]);
 
     const fetchCategories = async () => {
+        if (!user) return;
         try {
-            const res = await fetch('http://localhost:5000/api/categories');
+            const res = await fetch(`http://localhost:5000/api/categories?userId=${user.id}`);
             const data = await res.json();
             setCategories(data);
         } catch (error) {
@@ -61,10 +62,11 @@ export default function MyLibrary() {
 
     const fetchDocuments = async () => {
         setIsLoading(true);
+        if (!user) return;
         try {
-            let url = 'http://localhost:5000/api/documents/library';
+            let url = `http://localhost:5000/api/documents/library?userId=${user.id}`;
             if (selectedCategory) {
-                url += `?categoryId=${selectedCategory}`;
+                url += `&categoryId=${selectedCategory}`;
             }
             const res = await fetch(url);
             const data = await res.json();
@@ -84,6 +86,7 @@ export default function MyLibrary() {
         formData.append('file', uploadFile);
         formData.append('type', uploadType);
         formData.append('title', uploadTitle); // Can be empty, backend will use filename
+        if (user) formData.append('userId', user.id.toString());
         if (uploadCategoryId && uploadCategoryId !== 'none') {
             formData.append('categoryId', uploadCategoryId);
         }
@@ -110,12 +113,12 @@ export default function MyLibrary() {
     };
 
     const handleCreateCategory = async () => {
-        if (!newCategoryName) return;
+        if (!newCategoryName || !user) return;
         try {
             const res = await fetch('http://localhost:5000/api/categories', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: newCategoryName }),
+                body: JSON.stringify({ name: newCategoryName, userId: user.id }),
             });
             if (res.ok) {
                 toast.success('Category created');

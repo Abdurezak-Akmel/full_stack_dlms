@@ -71,5 +71,6 @@ In Workspace Module
 Prompt 9 - Privileges List
 In the admin tools page, in the role management section, let the privileges affect the components of the user dashboard UI. For example, if the user does not have the privilege to upload documents from local storage to the archive page of the DMS, the upload button should not be visible in the archive page. If the user does not have the privilege to share documents for an individual, the individual scope from the four scopes in the compose page should not be visible in the compose page. If the user does not have the privilege to share documents for a team, the team scope from the four scopes in the compose page should not be visible in the compose page. If the user does not have the privilege to share documents for a workspace, the workspace scope from the four scopes in the compose page should not be visible in the compose page. If the user does not have the privilege to share documents for a branch, the branch scope from the four scopes in the compose page should not be visible in the compose page. If the user does not have the privilege to have the approval module, the approval module should not be visible in the user dashboard. If the user does not have the privilege to create a workspace and share documents for a workspace, the create workspace button should not be visible in the workspace page.
 
-Promt-10
+Promt-10 - The Categories Routing
+When a user creates a category in the MyLibrary module, the categories should be rendered only for the user who created them. 
 

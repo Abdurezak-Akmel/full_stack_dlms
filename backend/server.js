@@ -40,7 +40,10 @@ const upload = multer({ storage: storage });
 // Assuming we pass user_id in headers or params for now, or default to 1 for MVP
 app.get('/api/categories', async (req, res) => {
     try {
-        const userId = req.query.userId || 1; // Default to user 1 for now
+        const userId = req.query.userId;
+        if (!userId) {
+            return res.json([]); // Return empty if no user specified
+        }
         const result = await db.query('SELECT * FROM categories WHERE user_id = $1 ORDER BY name ASC', [userId]);
         res.json(result.rows);
     } catch (err) {
@@ -52,13 +55,12 @@ app.get('/api/categories', async (req, res) => {
 // Create Category
 app.post('/api/categories', async (req, res) => {
     const { name, userId } = req.body;
-    if (!name) return res.status(400).json({ error: 'Name is required' });
+    if (!name || !userId) return res.status(400).json({ error: 'Name and User ID are required' });
 
     try {
-        const uid = userId || 1;
         const result = await db.query(
             'INSERT INTO categories (name, user_id) VALUES ($1, $2) RETURNING *',
-            [name, uid]
+            [name, userId]
         );
         res.json(result.rows[0]);
     } catch (err) {
@@ -75,7 +77,8 @@ app.post('/api/documents/upload', upload.single('file'), async (req, res) => {
     if (!file) return res.status(400).json({ error: 'No file uploaded' });
 
     try {
-        const uid = userId || 1;
+        const uid = userId; // Strict check, no fallback
+        if (!uid) return res.status(400).json({ error: 'User ID is required' });
         const catId = categoryId ? parseInt(categoryId) : null;
         const docType = type || 'document';
 
@@ -102,7 +105,8 @@ app.post('/api/documents/upload', upload.single('file'), async (req, res) => {
 // Get My Library Documents
 app.get('/api/documents/library', async (req, res) => {
     try {
-        const userId = req.query.userId || 1;
+        const userId = req.query.userId;
+        if (!userId) return res.json([]);
         const categoryId = req.query.categoryId;
 
         let query = `
@@ -196,7 +200,8 @@ app.delete('/api/documents/:id', async (req, res) => {
 // --- Drafts API ---
 app.post('/api/drafts', async (req, res) => {
     const { id, userId, name, content } = req.body;
-    const uid = userId || 1;
+    const uid = userId;
+    if (!uid) return res.status(400).json({ error: 'User ID is required' });
 
     try {
         let result;
@@ -225,14 +230,16 @@ app.post('/api/drafts', async (req, res) => {
 
 app.get('/api/drafts', async (req, res) => {
     try {
-        const userId = req.query.userId || 1;
-        const result = await db.query('SELECT * FROM drafts WHERE user_id = $1 ORDER BY updated_at DESC', [userId]);
-        res.json(result.rows);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Server error' });
-    }
-});
+        try {
+            const userId = req.query.userId;
+            if (!userId) return res.json([]);
+            const result = await db.query('SELECT * FROM drafts WHERE user_id = $1 ORDER BY updated_at DESC', [userId]);
+            res.json(result.rows);
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ error: 'Server error' });
+        }
+    });
 
 app.get('/api/drafts/:id', async (req, res) => {
     const { id } = req.params;

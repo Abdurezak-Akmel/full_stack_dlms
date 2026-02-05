@@ -407,10 +407,11 @@ export default function Compose() {
 
   const handleSaveDraftAndProceed = async () => {
     const name = draftName.trim() || defaultDraftName;
+    if (!user) return;
 
     const draftData = {
       id: activeDraftId, // If editing existing draft
-      userId: 1, // Default user
+      userId: user.id,
       name,
       content: {
         currentStep,

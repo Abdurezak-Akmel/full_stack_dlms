@@ -4,20 +4,22 @@ import { DraftCard, Draft } from '@/components/drafts/DraftCard';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { FileText } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Drafts() {
+    const { user } = useAuth();
     const navigate = useNavigate();
     const [drafts, setDrafts] = useState<Draft[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         fetchDrafts();
-    }, []);
+    }, [user]);
 
     const fetchDrafts = async () => {
+        if (!user) return;
         try {
-            // Assuming user ID 1 for now as per other components
-            const res = await fetch('http://localhost:5000/api/drafts?userId=1');
+            const res = await fetch(`http://localhost:5000/api/drafts?userId=${user.id}`);
             if (res.ok) {
                 const data = await res.json();
                 setDrafts(data);
